@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# git-ignore -- A command to help with management of .gitignore files
+#
+
+usage() {
+    echo "usage: git ignore [options]"
+    echo
+    echo "Options: TBD"
+}
+
+list() {
+
+}
+
+while getopts ":l:p::" opt; do
+    case "${opt}" in
+        -l | --list )
+            list;
+            shift ;;
+        -h | --help )
+            usage;
+            shift ;;
+        -n | --dry-run )
+            DRY_RUN=true;
+            shift ;;
+        -s | --stack-size )
+            STACK_SIZE="$2";
+            shift; shift ;;
+        -- )
+            shift;
+            break ;;
+        * )
+            usage;
+            break ;;
+    esac
+done
+
+
+
