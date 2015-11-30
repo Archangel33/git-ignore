@@ -3,37 +3,54 @@
 # git-ignore -- A command to help with management of .gitignore files
 #
 
+version(){
+    echo "git-ignore 0.0.1"
+    echo
+}
+
 usage() {
     echo "usage: git ignore [options]"
+    echo
     echo "Options: TBD"
+    echo
 }
 
 list() {
-    $(git check-ignore -v ./*)
+    root=$(git rev-parse --show-toplevel)
+    echo "$(git check-ignore -v $root/*)"
 }
 
-echo "that"
-while getopts ":l:p::" opt; do
-    case "${opt}" in
-        -l | --list )
-            list;
-            shift ;;
-        -h | --help )
-            usage;
-            shift ;;
-        -n | --dry-run )
-            DRY_RUN=true;
-            shift ;;
-        -- )
-            shift;
-            break ;;
-        * )
-            usage;
-            break ;;
-        \? ) list ;
-             shift;;
-    esac
-done
 
+main(){
 
+    if [ "$#" -lt 1 ]; then
+        list; exit 0
+    fi
 
+    while getopts ":l:p::" opt; do
+
+        case "${opt}" in
+            -l | --list )
+                list;
+                shift ;;
+            -h | --help )
+                usage; exit 0;;
+            -v | --version )
+                version; exit 0;;
+            -n | --dry-run )
+                DRY_RUN=true;
+                shift ;;
+            -- )
+                shift;
+                break ;;
+            * )
+                usage; exit 0;;
+            \? )
+                list ; exit 0;;
+        esac
+    done
+
+    exit 0
+}
+
+main "$@"
