@@ -20,12 +20,30 @@ list() {
     echo "$(git check-ignore -v $root/*)"
 }
 
+handleSubcommands(){
+    local subcommand="$0"; shift
+    export WORKINGDIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+
+    if [ ! -e "$WORKINGDIR/git-ignore-$subcommand" ]; then
+        usage; exit 1
+    fi
+
+    source "$WORKINGDIR/git-ignore-$subcommand"
+
+    if [ ! type "cmd_$subcommand" ]; then
+        usage; exit 1
+    fi
+
+    cmd_$subcommand "$@"
+}
 
 main(){
 
     if [ "$#" -lt 1 ]; then
         list; exit 0
     fi
+
+    local VERBOSE=false
 
     while getopts ":l:p::" opt; do
 
@@ -35,21 +53,22 @@ main(){
                 shift ;;
             -h | --help )
                 usage; exit 0;;
-            -v | --version )
+            --version )
                 version; exit 0;;
-            -n | --dry-run )
-                DRY_RUN=true;
-                shift ;;
+            -v | --verbose)
+                VERBOSE=true; shift;;
             -- )
-                shift;
+                echo " -- shift" ; shift;
                 break ;;
             * )
-                usage; exit 0;;
+                echo "should handle subcommands"
+                handleSubcommands
+                exit 0;;
             \? )
                 list ; exit 0;;
         esac
     done
-
+    echo "end of file"
     exit 0
 }
 
