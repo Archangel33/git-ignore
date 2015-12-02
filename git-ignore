@@ -3,16 +3,32 @@
 # git-ignore -- A command to help with management of .gitignore files
 #
 
+SCRIPT=$(basename ${BASH_SOURCE[0]})
+
+OPT_VERBOSE=false
+OPT_GLOBAL=false
+
+#Set fonts for Help.
+NORM=`tput sgr0`
+BOLD=`tput bold`
+REV=`tput smso`
+
 version(){
     echo "git-ignore 0.0.1"
     echo
 }
 
-usage() {
-    echo "usage: git ignore [options]"
-    echo
-    echo "Options: TBD"
-    echo
+function HELP{
+    echo -e \\n"Help documentation for ${BOLD}${SCRIPT}.${NORM}"\\n
+    echo -e "${REV}Basic usage:${NORM} ${BOLD}$SCRIPT file.ext${NORM}"\\n
+    echo "Command line switches are optional. The following switches are recognized."
+    echo "${REV}-a${NORM}  --Sets the value for option ${BOLD}a${NORM}. Default is ${BOLD}A${NORM}."
+    echo "${REV}-b${NORM}  --Sets the value for option ${BOLD}b${NORM}. Default is ${BOLD}B${NORM}."
+    echo "${REV}-c${NORM}  --Sets the value for option ${BOLD}c${NORM}. Default is ${BOLD}C${NORM}."
+    echo "${REV}-d${NORM}  --Sets the value for option ${BOLD}d${NORM}. Default is ${BOLD}D${NORM}."
+    echo -e "${REV}-h${NORM}  --Displays this help message. No further functions are performed."\\n
+    echo -e "Example: ${BOLD}$SCRIPT -a foo -b man -c chu -d bar file.ext${NORM}"\\n
+    exit 1
 }
 
 list() {
@@ -24,6 +40,8 @@ handleSubcommands(){
     local subcommand="$0"; shift
     export WORKINGDIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
 
+    echo "wd: $WORKINGDIR"
+    echo "subcmd: $subcommand"
     if [ ! -e "$WORKINGDIR/git-ignore-$subcommand" ]; then
         usage; exit 1
     fi
@@ -43,10 +61,8 @@ main(){
         list; exit 0
     fi
 
-    local VERBOSE=false
-
-    while getopts ":l:p::" opt; do
-
+    while getopts :l:p:r:h opt "$@"; do
+        echo "option: ${opt}"
         case "${opt}" in
             -l | --list )
                 list;
@@ -57,6 +73,10 @@ main(){
                 version; exit 0;;
             -v | --verbose)
                 VERBOSE=true; shift;;
+            --global )
+                #use the global ignore file
+                global=true
+                shift;;
             -- )
                 echo " -- shift" ; shift;
                 break ;;
@@ -65,7 +85,7 @@ main(){
                 handleSubcommands
                 exit 0;;
             \? )
-                list ; exit 0;;
+                echo "Invalid option: ${opt}" ; exit 0;;
         esac
     done
     echo "end of file"
