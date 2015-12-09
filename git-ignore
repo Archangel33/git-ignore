@@ -1,58 +1,120 @@
 #!/bin/bash
+#================================================================
+# HEADER
+#================================================================
+#% SYNOPSIS
+#+    ${SCRIPT_NAME} [-hv] CMD [CMD args]
+#%
+#% DESCRIPTION
+#%    This is a script template
+#%    to start any good shell script.
+#%
+#% OPTIONS
+#%    -h, --help                  Print this help, cease further execution
+#%    --log-level                 Sets the log level of the script, similarly to syslog
+#%                                Defualt log level is INFO(6)
+#%                                See https://en.wikipedia.org/wiki/Syslog#Severity_level for more info.
+#%
+#%    -v, --verbose               Sets --log-level to Debug(7)
+#%    --version                   Displays script information
+#%
+#% SUBCOMMANDS
+#%    list                        list
+#%
+#% EXAMPLES
+#%    ${SCRIPT_NAME} --global list
+#%
+#================================================================
+#% IMPLEMENTATION
+#-    version         ${SCRIPT_NAME} ${SCRIPT_VERSION}
+#-    author          Michel J. Reed
+#-    license         TBD
+#-    script_id       12345
+#-
+#================================================================
+#  HISTORY
+#     2015/12/02 : michaelreed : Script creation
 #
-# git-ignore -- A command to help with management of .gitignore files
+#================================================================
+#  DEBUG OPTION
+#    set -n  # Uncomment to check your syntax, without execution.
+#    set -x  # Uncomment to debug this shell script
 #
-
+#================================================================
+# END_OF_HEADER
+#================================================================
+#== Required variables ==#
+SCRIPT_HEADSIZE=$(head -200 ${0} |grep -n "^# END_OF_HEADER" | cut -f1 -d:)
+SCRIPT_NAME="$(basename ${0})"
 SCRIPT=$(basename ${BASH_SOURCE[0]})
+SCRIPT_VERSION="0.0.1"
 
+#SET DEFAULT OPTIONS
 OPT_VERBOSE=false
 OPT_GLOBAL=false
+OPT_LOGLEVEL=6
 
 #Set fonts for Help.
 NORM=`tput sgr0`
 BOLD=`tput bold`
 REV=`tput smso`
 
+#Set loglevels
+LVL_EMERG=0
+LVL_ALERT=1
+LVL_CRIT=2
+LVL_ERR=3
+LVL_WARN=4
+LVL_NOTICE=5
+LVL_INFO=6
+LVL_DEBUG=7
+
+declare -A LOG_LEVELS
+LOG_LEVELS=([0]="emerg" [1]="alert" [2]="crit" [3]="err" [4]="warning" [5]="notice" [6]="info" [7]="debug")
+function .log () {
+  local LEVEL=${1}
+  shift
+  if [ ${OPT_LOGLEVEL} -ge ${LEVEL} ]; then
+      echo "[${LOG_LEVELS[$LEVEL]}]" "$@"
+  fi
+}
+
+#** Boilerplate Functions **#
 version(){
-    echo "git-ignore 0.0.1"
+    echo "${SCRIPT_NAME} ${SCRIPT_VERSIN}"
     echo
 }
 
-function HELP{
-    echo -e \\n"Help documentation for ${BOLD}${SCRIPT}.${NORM}"\\n
-    echo -e "${REV}Basic usage:${NORM} ${BOLD}$SCRIPT file.ext${NORM}"\\n
-    echo "Command line switches are optional. The following switches are recognized."
-    echo "${REV}-a${NORM}  --Sets the value for option ${BOLD}a${NORM}. Default is ${BOLD}A${NORM}."
-    echo "${REV}-b${NORM}  --Sets the value for option ${BOLD}b${NORM}. Default is ${BOLD}B${NORM}."
-    echo "${REV}-c${NORM}  --Sets the value for option ${BOLD}c${NORM}. Default is ${BOLD}C${NORM}."
-    echo "${REV}-d${NORM}  --Sets the value for option ${BOLD}d${NORM}. Default is ${BOLD}D${NORM}."
-    echo -e "${REV}-h${NORM}  --Displays this help message. No further functions are performed."\\n
-    echo -e "Example: ${BOLD}$SCRIPT -a foo -b man -c chu -d bar file.ext${NORM}"\\n
-    exit 1
-}
-
-list() {
-    root=$(git rev-parse --show-toplevel)
-    echo "$(git check-ignore -v $root/*)"
-}
-
 handleSubcommands(){
-    local subcommand="$0"; shift
+    local subcommand="$1"; shift
     export WORKINGDIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
 
-    echo "wd: $WORKINGDIR"
-    echo "subcmd: $subcommand"
+    .log $LVL_DEBUG "wd: $WORKINGDIR"
+    .log $LVL_DEBUG "subcmd: $subcommand"
+
+    if [ ! $subcommand ]; then
+        subcommand="list"
+    fi
+
     if [ ! -e "$WORKINGDIR/git-ignore-$subcommand" ]; then
-        usage; exit 1
+        die "$subcommand is not a valid git-ignore subcommand."; exit 1
     fi
 
     source "$WORKINGDIR/git-ignore-$subcommand"
 
-    if [ ! type "cmd_$subcommand" ]; then
-        usage; exit 1
+    if [ ! "$(type cmd_$subcommand)" 1> /dev/null ]; then
+        die "subcommand '$subcommand' has no entry point"; exit 1
     fi
 
     cmd_$subcommand "$@"
+}
+
+die() { echo "$*" >&2; usage; exit 2; }
+
+#** script funcs **#
+list() {
+    root=$(git rev-parse --show-toplevel)
+    echo "$(git check-ignore -v $root/*)"
 }
 
 main(){
@@ -60,35 +122,43 @@ main(){
     if [ "$#" -lt 1 ]; then
         list; exit 0
     fi
-
-    while getopts :l:p:r:h opt "$@"; do
-        echo "option: ${opt}"
+    while getopts :hvg-: opt "$@"; do
         case "${opt}" in
-            -l | --list )
-                list;
-                shift ;;
-            -h | --help )
-                usage; exit 0;;
-            --version )
-                version; exit 0;;
-            -v | --verbose)
-                VERBOSE=true; shift;;
-            --global )
-                #use the global ignore file
-                global=true
-                shift;;
-            -- )
-                echo " -- shift" ; shift;
-                break ;;
+            h )
+                usagefull; exit 0;;
+            v )
+                OPT_VERBOSE=true;;
+            g )
+                OPT_GLOBAL=true;;
+            - ) LONG_OPTARG="${OPTARG#*=}"
+                case "${OPTARG}" in
+                    version ) version; exit 0;;
+                    verbose ) OPT_VERBOSE=true;;
+                    global  ) OPT_GLOBAL=true;;
+                    log-level* ) OPT_LOGLEVEL=${LONG_OPTARG};;
+                    version* | verbose* | global* )
+                        die "Option '--$OPTARG' doesn't allow an argument" ;;
+                esac;;
+            \? ) die "Option '-$OPTARG' is unknown" ;;
             * )
-                echo "should handle subcommands"
+                .log $LVL_DEBUG "should handle subcommands"
                 handleSubcommands
-                exit 0;;
-            \? )
-                echo "Invalid option: ${opt}" ; exit 0;;
+                exit 0
+                break;;
         esac
     done
-    echo "end of file"
+    shift "$((OPTIND-1))"
+
+    # set verbosity once (set logging level)
+
+    if [ "$OPT_VERBOSE" = "true" -a "${OPT_LOGLEVEL}" -le "${LVL_INFO}" ]; then
+        OPT_LOGLEVEL=$LVL_DEBUG
+    fi
+
+    # anything left in $@ should be subcommands
+    .log ${LVL_DEBUG} "\$@ after loop: $@"
+    handleSubcommands "$@"
+    .log $LVL_DEBUG "EOF"
     exit 0
 }
 
