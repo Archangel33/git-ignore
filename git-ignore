@@ -51,8 +51,9 @@ SCRIPT_VERSION="0.0.1"
 
 #SET DEFAULT OPTIONS
 OPT_VERBOSE=false
-OPT_GLOBAL=false
 OPT_LOGLEVEL=6
+OPT_GLOBAL=false
+OPT_LOCAL=false
 
 #Set fonts for Help.
 NORM=`tput sgr0`
@@ -71,7 +72,7 @@ LVL_DEBUG=7
 
 declare -A LOG_LEVELS
 LOG_LEVELS=([0]="emerg" [1]="alert" [2]="crit" [3]="err" [4]="warning" [5]="notice" [6]="info" [7]="debug")
-function .log () {
+function log () {
   local LEVEL=${1}
   shift
   if [ ${OPT_LOGLEVEL} -ge ${LEVEL} ]; then
@@ -79,7 +80,11 @@ function .log () {
   fi
 }
 
-#** Boilerplate Functions **#
+#== usage functions ==#
+usage() { printf "Usage: "; head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#+" | sed -e "s/^#+[ ]*//g" -e "s/\${SCRIPT_NAME}/${SCRIPT_NAME}/g" ; }
+usagefull() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#[%+-]" | sed -e "s/^#[%+-]//g" -e "s/\${SCRIPT_NAME}/${SCRIPT_NAME}/g" ; }
+scriptinfo() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#-" | sed -e "s/^#-//g" -e "s/\${SCRIPT_NAME}/${SCRIPT_NAME}/g"; }
+
 version(){
     echo "${SCRIPT_NAME} ${SCRIPT_VERSIN}"
     echo
@@ -89,8 +94,8 @@ handleSubcommands(){
     local subcommand="$1"; shift
     export WORKINGDIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
 
-    .log $LVL_DEBUG "wd: $WORKINGDIR"
-    .log $LVL_DEBUG "subcmd: $subcommand"
+    log $LVL_DEBUG "wd: $WORKINGDIR"
+    log $LVL_DEBUG "subcmd: $subcommand"
 
     if [ ! $subcommand ]; then
         subcommand="list"
@@ -109,9 +114,8 @@ handleSubcommands(){
     cmd_$subcommand "$@"
 }
 
-die() { echo "$*" >&2; usage; exit 2; }
+die() { echo "$*" >&2; usage; exit 1; }
 
-#** script funcs **#
 list() {
     root=$(git rev-parse --show-toplevel)
     echo "$(git check-ignore -v $root/*)"
@@ -131,17 +135,19 @@ main(){
             g )
                 OPT_GLOBAL=true;;
             - ) LONG_OPTARG="${OPTARG#*=}"
+                echo "larg: ${OPTARG}"
                 case "${OPTARG}" in
                     version ) version; exit 0;;
                     verbose ) OPT_VERBOSE=true;;
-                    global  ) OPT_GLOBAL=true;;
+                    global  ) [ "$OPT_LOCAL" = "true" ] && die "Can not specify option '--$OPTARG' after specifing option '--local'" || OPT_GITIGNORESRC=true;;
+                    local   ) [ "$OPT_GLOBAL" = "true" ] && die "Can not specify option '--$OPTARG' after specifing option '--global'" || OPT_GITIGNORESRC=true;;
                     log-level* ) OPT_LOGLEVEL=${LONG_OPTARG};;
                     version* | verbose* | global* )
                         die "Option '--$OPTARG' doesn't allow an argument" ;;
                 esac;;
             \? ) die "Option '-$OPTARG' is unknown" ;;
             * )
-                .log $LVL_DEBUG "should handle subcommands"
+                log $LVL_DEBUG "should handle subcommands"
                 handleSubcommands
                 exit 0
                 break;;
@@ -155,10 +161,22 @@ main(){
         OPT_LOGLEVEL=$LVL_DEBUG
     fi
 
+    # set gitignorefilesrc
+    if [ "$OPT_GLOBAL" = "true" -a "$OPT_LOCAL" = "true" ]; then
+        log $LVL_ERR "options local and global can not be used at the same time!"
+    elif [ "$OPT_GLOBAL" = "true" ]; then
+        log $LVL_DEBUG "setting global"
+    elif [ "$OPT_LOCAL" = "true" ]; then
+        log $LVL_DEBUG "setting LOCAL"
+    elif [ "$OPT_GLOBAL" = "false" -a "$OPT_LOCAL" = "false" ]; then
+        log $LVL_DEBUG "setting Default"
+    fi
+
+
     # anything left in $@ should be subcommands
-    .log ${LVL_DEBUG} "\$@ after loop: $@"
+    log ${LVL_DEBUG} "\$@ after loop: $@"
     handleSubcommands "$@"
-    .log $LVL_DEBUG "EOF"
+    log $LVL_DEBUG "EOF"
     exit 0
 }
 
