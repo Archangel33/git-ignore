@@ -32,10 +32,6 @@
 #-    script_id       12345
 #-
 #================================================================
-#  HISTORY
-#     2015/12/02 : michaelreed : Script creation
-#
-#================================================================
 #  DEBUG OPTION
 #    set -n  # Uncomment to check your syntax, without execution.
 #    set -x  # Uncomment to debug this shell script
@@ -86,7 +82,7 @@ usagefull() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#[%+-]" | sed -e "s/
 scriptinfo() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#-" | sed -e "s/^#-//g" -e "s/\${SCRIPT_NAME}/${SCRIPT_NAME}/g"; }
 
 version(){
-    echo "${SCRIPT_NAME} ${SCRIPT_VERSIN}"
+    echo "${SCRIPT_NAME} ${SCRIPT_VERSION}"
     echo
 }
 
@@ -139,8 +135,8 @@ main(){
                 case "${OPTARG}" in
                     version ) version; exit 0;;
                     verbose ) OPT_VERBOSE=true;;
-                    global  ) [ "$OPT_LOCAL" = "true" ] && die "Can not specify option '--$OPTARG' after specifing option '--local'" || OPT_GITIGNORESRC=true;;
-                    local   ) [ "$OPT_GLOBAL" = "true" ] && die "Can not specify option '--$OPTARG' after specifing option '--global'" || OPT_GITIGNORESRC=true;;
+                    global  ) log $LVL_DEBUG [ "${OPT_LOCAL}" = true ] ;;#&& die "Can not specify option '--$OPTARG' after specifing option '--local'";;# || OPT_GITIGNORESRC=true;;
+                    local   ) [ "${OPT_GLOBAL}" = true ] && die "Can not specify option '--$OPTARG' after specifing option '--global'";; #|| OPT_GITIGNORESRC=true;;
                     log-level* ) OPT_LOGLEVEL=${LONG_OPTARG};;
                     version* | verbose* | global* )
                         die "Option '--$OPTARG' doesn't allow an argument" ;;
