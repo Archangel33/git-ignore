@@ -131,12 +131,11 @@ main(){
             g )
                 OPT_GLOBAL=true;;
             - ) LONG_OPTARG="${OPTARG#*=}"
-                echo "larg: ${OPTARG}"
                 case "${OPTARG}" in
                     version ) version; exit 0;;
                     verbose ) OPT_VERBOSE=true;;
-                    global  ) log $LVL_DEBUG [ "${OPT_LOCAL}" = true ] ;;#&& die "Can not specify option '--$OPTARG' after specifing option '--local'";;# || OPT_GITIGNORESRC=true;;
-                    local   ) [ "${OPT_GLOBAL}" = true ] && die "Can not specify option '--$OPTARG' after specifing option '--global'";; #|| OPT_GITIGNORESRC=true;;
+                    global  ) [ "${OPT_LOCAL}" = true ] && die "Can not specify option '--$OPTARG' after specifing option '--local'" || OPT_GLOBAL=true;;
+                    local   ) [ "${OPT_GLOBAL}" = true ] && die "Can not specify option '--$OPTARG' after specifing option '--global'" || OPT_LOCAL=true;;
                     log-level* ) OPT_LOGLEVEL=${LONG_OPTARG};;
                     version* | verbose* | global* )
                         die "Option '--$OPTARG' doesn't allow an argument" ;;
