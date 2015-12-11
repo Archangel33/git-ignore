@@ -32,10 +32,6 @@
 #-    script_id       12345
 #-
 #================================================================
-#  HISTORY
-#     2015/12/02 : michaelreed : Script creation
-#
-#================================================================
 #  DEBUG OPTION
 #    set -n  # Uncomment to check your syntax, without execution.
 #    set -x  # Uncomment to debug this shell script
@@ -49,11 +45,16 @@ SCRIPT_NAME="$(basename ${0})"
 SCRIPT=$(basename ${BASH_SOURCE[0]})
 SCRIPT_VERSION="0.0.1"
 
+gitignorefile="./.gitignore"
+
 #SET DEFAULT OPTIONS
 OPT_VERBOSE=false
 OPT_LOGLEVEL=6
 OPT_GLOBAL=false
 OPT_LOCAL=false
+
+#Set script default vars
+DEFAULT_localrepoignore="$(git rev-parse --show-toplevel)/.git/info/excludes"
 
 #Set fonts for Help.
 NORM=`tput sgr0`
@@ -103,7 +104,7 @@ usagefull() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#[%+-]" | sed -e "s/
 scriptinfo() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#-" | sed -e "s/^#-//g" | replace_bash_variables ; }
 
 version(){
-    echo "${SCRIPT_NAME} ${SCRIPT_VERSIN}"
+    echo "${SCRIPT_NAME} ${SCRIPT_VERSION}"
     echo
 }
 
@@ -156,12 +157,11 @@ main(){
             g )
                 OPT_GLOBAL=true;;
             - ) LONG_OPTARG="${OPTARG#*=}"
-                echo "larg: ${OPTARG}"
                 case "${OPTARG}" in
                     version ) version; exit 0;;
                     verbose ) OPT_VERBOSE=true;;
-                    global  ) [ "$OPT_LOCAL" = "true" ] && die "Can not specify option '--$OPTARG' after specifing option '--local'" || OPT_GITIGNORESRC=true;;
-                    local   ) [ "$OPT_GLOBAL" = "true" ] && die "Can not specify option '--$OPTARG' after specifing option '--global'" || OPT_GITIGNORESRC=true;;
+                    global  ) [ "${OPT_LOCAL}" = true ] && die "Can not specify option '--$OPTARG' after specifing option '--local'" || OPT_GLOBAL=true;;
+                    local   ) [ "${OPT_GLOBAL}" = true ] && die "Can not specify option '--$OPTARG' after specifing option '--global'" || OPT_LOCAL=true;;
                     log-level* ) OPT_LOGLEVEL=${LONG_OPTARG};;
                     version* | verbose* | global* )
                         die "Option '--$OPTARG' doesn't allow an argument" ;;
@@ -182,15 +182,15 @@ main(){
         OPT_LOGLEVEL=$LVL_DEBUG
     fi
 
-    # set gitignorefilesrc
+    # set gitignorefile
     if [ "$OPT_GLOBAL" = "true" -a "$OPT_LOCAL" = "true" ]; then
         log $LVL_ERR "options local and global can not be used at the same time!"
     elif [ "$OPT_GLOBAL" = "true" ]; then
-        log $LVL_DEBUG "setting global"
+        gitignorefile=$(git config --get core.excludesFile)
     elif [ "$OPT_LOCAL" = "true" ]; then
-        log $LVL_DEBUG "setting LOCAL"
+        gitignorefile=$DEFAULT_localrepoignore
     elif [ "$OPT_GLOBAL" = "false" -a "$OPT_LOCAL" = "false" ]; then
-        log $LVL_DEBUG "setting Default"
+        gitignorefile="./.gitignore"
     fi
 
 
