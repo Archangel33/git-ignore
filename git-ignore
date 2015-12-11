@@ -44,7 +44,7 @@
 # END_OF_HEADER
 #================================================================
 #== Required variables ==#
-SCRIPT_HEADSIZE=$(head -200 ${0} |grep -n "^# END_OF_HEADER" | cut -f1 -d:)
+SCRIPT_HEADSIZE=$(head -200 ${0} | grep -n "^# END_OF_HEADER" | cut -f1 -d:)
 SCRIPT_NAME="$(basename ${0})"
 SCRIPT=$(basename ${BASH_SOURCE[0]})
 SCRIPT_VERSION="0.0.1"
@@ -80,10 +80,27 @@ function log () {
   fi
 }
 
+function replace_bash_variables () {
+    output=''
+    while IFS='' read -r line ; do
+        local sed_args=()
+        local varname
+        while read varname ; do
+            sed_args+=(-e "s/\${$varname}/${!varname}/g")
+        done < <(echo "$line" | grep -o '\${[a-zA-Z_][a-zA-Z_]*}' | grep -o '[a-zA-Z_][a-zA-Z_]*' | sort -u)
+        if [[ "${#sed_args[@]}" = 0 ]] ; then
+            output+="$line"
+        else
+            output+="$( printf "$line" | sed "${sed_args[@]}")"
+        fi
+    done
+    echo "$output"
+}
+
 #== usage functions ==#
-usage() { printf "Usage: "; head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#+" | sed -e "s/^#+[ ]*//g" -e "s/\${SCRIPT_NAME}/${SCRIPT_NAME}/g" ; }
-usagefull() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#[%+-]" | sed -e "s/^#[%+-]//g" -e "s/\${SCRIPT_NAME}/${SCRIPT_NAME}/g" ; }
-scriptinfo() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#-" | sed -e "s/^#-//g" -e "s/\${SCRIPT_NAME}/${SCRIPT_NAME}/g"; }
+usage() { printf "Usage: "; head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#+" | sed -e "s/^#+[ ]*//g" | replace_bash_variables ; }
+usagefull() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#[%+-]" | sed -e "s/^#[%+-]//g" | replace_bash_variables ; }
+scriptinfo() { head -${SCRIPT_HEADSIZE:-99} ${0} | grep -e "^#-" | sed -e "s/^#-//g" | replace_bash_variables ; }
 
 version(){
     echo "${SCRIPT_NAME} ${SCRIPT_VERSIN}"
@@ -114,7 +131,11 @@ handleSubcommands(){
     cmd_$subcommand "$@"
 }
 
-die() { echo "$*" >&2; usage; exit 1; }
+die() {
+    printf "$*: " >&2; usage;echo
+    echo "Run '${SCRIPT_NAME} -h' to display full help text"
+    exit 1
+}
 
 list() {
     root=$(git rev-parse --show-toplevel)
