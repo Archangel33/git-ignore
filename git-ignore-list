@@ -1,5 +1,6 @@
 #!/bin/sh
 
 cmd_list(){
-    list
+    root=$(git rev-parse --show-toplevel)
+    echo "$(git check-ignore -v $root/*)"
 }

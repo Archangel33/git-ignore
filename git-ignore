@@ -147,15 +147,12 @@ die() {
     exit 1
 }
 
-list() {
-    root=$(git rev-parse --show-toplevel)
-    echo "$(git check-ignore -v $root/*)"
-}
+
 
 main(){
 
     if [ "$#" -lt 1 ]; then
-        list; exit 0
+        handleSubcommands; exit 0
     fi
     while getopts :hvg-: opt "$@"; do
         case "${opt}" in
