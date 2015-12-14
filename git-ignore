@@ -19,7 +19,10 @@
 #%    --version                   Displays script information
 #%
 #% SUBCOMMANDS
-#%    list                        list
+#%    add                         Adds patterns to the $gitignorefile
+#%    list                        Lists all files that are currently being ignored in the repository
+#%    edit                        Opens the $gitignorefile in the systems default editor.
+#%                                The default editor is specified via the $EDITOR environment variable.
 #%
 #% EXAMPLES
 #%    ${SCRIPT_NAME} --global list
