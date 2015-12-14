@@ -1,0 +1,17 @@
+#!/bin/bash
+
+cmd_add(){
+    echo "gitignorefile: $gitignorefile"
+    if [ ! -e "$gitignorefile" ] ; then
+        touch "$gitignorefile"
+    fi
+
+    if [ ! -w "$gitignorefile" ] ; then
+        echo "cannot write to git ignore file: $gitignorefile"
+        exit 1
+    fi
+
+    echo "\$@: $@"
+    # for loop here for each pattern
+    # echo $1 >> $gitignorefile
+ }
