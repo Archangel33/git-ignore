@@ -5,7 +5,7 @@ cmd_add(){
         die "Add command requires at least one pattern" ; exit 1
     fi
 
-    echo "gitignorefile: $gitignorefile"
+     log $LVL_DEBUG "gitignorefile: $gitignorefile"
     if [ ! -e "$gitignorefile" ] ; then
         touch "$gitignorefile"
     fi
@@ -15,7 +15,7 @@ cmd_add(){
         exit 1
     fi
 
-    echo "\$@: $@"
+    log $LVL_DEBUG "\$@: $@"
 
     while (("$#")) ; do
         echo "$1" >> "$gitignorefile"
