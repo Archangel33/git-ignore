@@ -1,6 +1,10 @@
 #!/bin/bash
 
 cmd_add(){
+    if [ "$#" == "0" ] ; then
+        die "Add command requires at least one pattern" ; exit 1
+    fi
+
     echo "gitignorefile: $gitignorefile"
     if [ ! -e "$gitignorefile" ] ; then
         touch "$gitignorefile"
@@ -12,6 +16,7 @@ cmd_add(){
     fi
 
     echo "\$@: $@"
+
     # for loop here for each pattern
     # echo $1 >> $gitignorefile
  }
