@@ -6,8 +6,9 @@ git-ignore is a tool to help with managing gitignore files for git.
 
 Clone the repository into your /usr/lib/git-core direcory or a directory on your path.
 ex: basic install
-    $ git clone https://github.com/Archangel33/git-ignore.git <path to desired installation>
-
+```
+$ git clone https://github.com/Archangel33/git-ignore.git <path to desired installation>
+```
 From here either add <path to desired installation> to the $PATH environment var or copy the git-ignore-* files to /usr/lib/git-core/
 
 ### complete installations
