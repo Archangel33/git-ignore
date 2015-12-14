@@ -54,7 +54,7 @@ OPT_GLOBAL=false
 OPT_LOCAL=false
 
 #Set script default vars
-DEFAULT_localrepoignore="$(git rev-parse --show-toplevel)/.git/info/excludes"
+DEFAULT_localrepoignore="$(git rev-parse --show-toplevel)/.git/info/exclude"
 
 #Set fonts for Help.
 NORM=`tput sgr0`
