@@ -3,7 +3,7 @@
 # HEADER
 #================================================================
 #% SYNOPSIS
-#+    ${SCRIPT_NAME} [-hv] CMD [CMD args]
+#+    ${SCRIPT_NAME} [-h | --help ] [-v | --verbose ] [ --version ] [--global | --local] [SUBCOMMAND [ SUBCOMMAND_args ]]
 #%
 #% DESCRIPTION
 #%    ${SCRIPT_NAME} is sub-command to git which assists in the ignoring process.
@@ -24,13 +24,14 @@
 #%    --version                   Displays script information
 #%
 #% SUBCOMMANDS
-#%    add                         Adds patterns to the gitignorefile
+#%    add PATTERN ...             Adds patterns to the gitignorefile
 #%    list                        Lists all files that are currently being ignored in the repository
 #%    edit                        Opens the gitignorefile in the systems default editor.
 #%                                The default editor is specified via the $EDITOR environment variable.
 #%
 #% EXAMPLES
 #%    ${SCRIPT_NAME} --global list
+#%    ${SCRIPT_NAME} edit        This will open up a .gitignore file at the CWD in the default editor
 #%
 #================================================================
 #% IMPLEMENTATION
