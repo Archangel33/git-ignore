@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+cmd_edit(){
+    if [ ! "$#" == "0" ] ; then
+        die "edit command does not accept any arguments"; exit 1
+    fi
+
+    "${EDITOR:-ed}" "$gitignorefile"
+}
