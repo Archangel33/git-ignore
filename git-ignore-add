@@ -17,6 +17,8 @@ cmd_add(){
 
     echo "\$@: $@"
 
-    # for loop here for each pattern
-    # echo $1 >> $gitignorefile
+    while (("$#")) ; do
+        echo "$1" >> "$gitignorefile"
+        shift
+    done
  }
