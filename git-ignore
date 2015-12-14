@@ -6,11 +6,16 @@
 #+    ${SCRIPT_NAME} [-hv] CMD [CMD args]
 #%
 #% DESCRIPTION
-#%    This is a script template
-#%    to start any good shell script.
+#%    ${SCRIPT_NAME} is sub-command to git which assists in the ignoring process.
+#%      If  --local and --global flags are not set ${SCRIPT_NAME} will use "./.gitignore"
+#%      as the value for gitignorefile. If the gitignorefile file does not exist ${SCRIPT_NAME} will
+#%      create the file. See https://git-scm.com/docs/gitignore for more info on how git uses ignore files
 #%
 #% OPTIONS
+#%    --global                    Sets the gitignorefile to be the global git ignore file which uses git's
+#%                                'core.excludesFile' value located in the users '~/.gitconfig'
 #%    -h, --help                  Print this help, cease further execution
+#%    --local                     Sets the gitignorefile to be the repository's git exclude file("<reporoot>/.git/info/exclude")
 #%    --log-level                 Sets the log level of the script, similarly to syslog
 #%                                Defualt log level is INFO(6)
 #%                                See https://en.wikipedia.org/wiki/Syslog#Severity_level for more info.
@@ -19,9 +24,9 @@
 #%    --version                   Displays script information
 #%
 #% SUBCOMMANDS
-#%    add                         Adds patterns to the $gitignorefile
+#%    add                         Adds patterns to the gitignorefile
 #%    list                        Lists all files that are currently being ignored in the repository
-#%    edit                        Opens the $gitignorefile in the systems default editor.
+#%    edit                        Opens the gitignorefile in the systems default editor.
 #%                                The default editor is specified via the $EDITOR environment variable.
 #%
 #% EXAMPLES
@@ -31,7 +36,7 @@
 #% IMPLEMENTATION
 #-    version         ${SCRIPT_NAME} ${SCRIPT_VERSION}
 #-    author          Michel J. Reed
-#-    license         TBD
+#-    license
 #-    script_id       12345
 #-
 #================================================================
