@@ -15,6 +15,7 @@
 #%    --global                    Sets the gitignorefile to be the global git ignore file which uses git's
 #%                                'core.excludesFile' value located in the users '~/.gitconfig'
 #%    -h, --help                  Print this help, cease further execution
+#%    -i                          Sets Interactive mode
 #%    --local                     Sets the gitignorefile to be the repository's git exclude file("<reporoot>/.git/info/exclude")
 #%    --log-level                 Sets the log level of the script, similarly to syslog
 #%                                Defualt log level is INFO(6)
@@ -55,12 +56,14 @@ SCRIPT=$(basename ${BASH_SOURCE[0]})
 SCRIPT_VERSION="0.0.1"
 
 gitignorefile="./.gitignore"
+InteractiveMode=
 
 #SET DEFAULT OPTIONS
 OPT_VERBOSE=false
 OPT_LOGLEVEL=6
 OPT_GLOBAL=false
 OPT_LOCAL=false
+OPT_MODE=0
 
 #Set script default vars
 DEFAULT_localrepoignore="$(git rev-parse --show-toplevel)/.git/info/exclude"
@@ -154,10 +157,12 @@ main(){
     if [ "$#" -lt 1 ]; then
         handleSubcommands; exit 0
     fi
-    while getopts :hvg-: opt "$@"; do
+    while getopts :hvgi-: opt "$@"; do
         case "${opt}" in
             h )
                 usagefull; exit 0;;
+            i )
+                OPT_MODE=1;;
             v )
                 OPT_VERBOSE=true;;
             g )
@@ -199,6 +204,7 @@ main(){
         gitignorefile="./.gitignore"
     fi
 
+    InteractiveMode=${OPT_MODE}
 
     # anything left in $@ should be subcommands
     log ${LVL_DEBUG} "\$@ after loop: $@"
