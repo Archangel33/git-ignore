@@ -17,8 +17,49 @@ cmd_add(){
 
     log $LVL_DEBUG "\$@: $@"
 
-    while (("$#")) ; do
-        echo "$1" >> "$gitignorefile"
-        shift
+    while (("$#")) ; do # while not out of arguments (patterns)
+                if  patternExistsInFile "$1" "$gitignorefile"  ; then # if arg(pattern) literally matches line(containing a pattern)
+                    echo "Pattern '$1' already exists in '$gitignorefile'"
+                    log $LVL_DEBUG "InteractiveMode: $InteractiveMode"
+                    if [ ${InteractiveMode} -eq 1 ]; then
+                        interactiveAdd
+                    else
+                        log $LVL_DEBUG "Skipping Pattern"
+                    fi
+                else
+                    echo "$1" >> "$gitignorefile"
+                fi
+        shift # move to next argument(pattern)
     done
  }
+
+ patternExistsInFile(){
+     local pattern=$1; shift
+     local file=$1;
+
+     if [ ! -s $file ] ; then # if file is size 0 (empty) return value 1
+        return 1
+     fi
+
+     while IFS='' read -r line ; do
+         if [ "$pattern" == "$line" ] ; then
+            return 0
+         fi
+     done < "$file"
+
+     return 1
+}
+
+interactiveAdd(){
+    attempts=0
+    attempts_max=3
+    while [ ${attempts} -lt ${attempts_max} ] ; do # while user hasn't failed to enter a correct option
+        read -e -r -p "Do you still want to add the pattern? [Y/n]: " -n 1 choice </dev/tty # prompt user for input from the console and read only first char
+        case "$choice" in # switch on the choice
+            [yY][eE][sS] | y | Y ) echo "$1" >> "$gitignorefile"; break;; # if yes write to the file and exit attempts loop
+            [nN][oO] | n | N | "" ) break;; # if no do nothing and break out of attempts loop
+            * ) log $LVL_INFO "Invalid Choice: $choice"; echo "please enter 'yes' or 'no'";  ((attempts++));; # invalid input increase attempts and return to loop
+        esac
+    done
+    return 0
+}

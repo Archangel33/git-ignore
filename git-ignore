@@ -55,12 +55,14 @@ SCRIPT=$(basename ${BASH_SOURCE[0]})
 SCRIPT_VERSION="0.0.1"
 
 gitignorefile="./.gitignore"
+InteractiveMode=
 
 #SET DEFAULT OPTIONS
 OPT_VERBOSE=false
 OPT_LOGLEVEL=6
 OPT_GLOBAL=false
 OPT_LOCAL=false
+OPT_MODE=0
 
 #Set script default vars
 DEFAULT_localrepoignore="$(git rev-parse --show-toplevel)/.git/info/exclude"
@@ -199,6 +201,7 @@ main(){
         gitignorefile="./.gitignore"
     fi
 
+    InteractiveMode=${OPT_MODE}
 
     # anything left in $@ should be subcommands
     log ${LVL_DEBUG} "\$@ after loop: $@"
