@@ -18,23 +18,6 @@ cmd_add(){
             ;;
     esac
 
-    #while getopts w-: opt "$@"; do
-    #    log $LVL_DEBUG "Add opt: ${opt}"
-    #    case "${opt}" in
-    #        w )
-    #            OPT_WEB=1
-    #            ;;
-    #        - ) LONG_OPTARG="${OPTARG#*=}"
-    #            case "${OPTARG}" in
-    #               [wW][eE][bB] )
-    #                   OPT_WEB=1
-    #                   ;;
-    #            esac
-    #            ;;
-    #    esac
-    #    shift "$((OPTIND-1))"
-    #done
-
     log $LVL_DEBUG "gitignorefile: $gitignorefile"
     if [ ! -e "$gitignorefile" ] ; then
         touch "$gitignorefile"
