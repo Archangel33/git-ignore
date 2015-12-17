@@ -1,11 +1,41 @@
 #!/bin/bash
 
 cmd_add(){
+
+    OPT_WEB=0
+
     if [ "$#" == "0" ] ; then
         die "Add command requires at least one pattern" ; exit 1
     fi
 
-     log $LVL_DEBUG "gitignorefile: $gitignorefile"
+    log $LVL_DEBUG "Add options: $@"
+    log $LVL_DEBUG "\$1: $1"
+
+    case $1 in
+        -w | --[wW][eE][bB] )
+            OPT_WEB=1
+            shift
+            ;;
+    esac
+
+    #while getopts w-: opt "$@"; do
+    #    log $LVL_DEBUG "Add opt: ${opt}"
+    #    case "${opt}" in
+    #        w )
+    #            OPT_WEB=1
+    #            ;;
+    #        - ) LONG_OPTARG="${OPTARG#*=}"
+    #            case "${OPTARG}" in
+    #               [wW][eE][bB] )
+    #                   OPT_WEB=1
+    #                   ;;
+    #            esac
+    #            ;;
+    #    esac
+    #    shift "$((OPTIND-1))"
+    #done
+
+    log $LVL_DEBUG "gitignorefile: $gitignorefile"
     if [ ! -e "$gitignorefile" ] ; then
         touch "$gitignorefile"
     fi
@@ -17,31 +47,42 @@ cmd_add(){
 
     log $LVL_DEBUG "\$@: $@"
 
-    while (("$#")) ; do # while not out of arguments (patterns)
-                if  patternExistsInFile "$1" "$gitignorefile"  ; then # if arg(pattern) literally matches line(containing a pattern)
-                    echo "Pattern '$1' already exists in '$gitignorefile'"
-                    log $LVL_DEBUG "InteractiveMode: $InteractiveMode"
-                    if [ ${InteractiveMode} -eq 1 ]; then
-                        interactiveAdd
-                    else
-                        log $LVL_DEBUG "Skipping Pattern"
-                    fi
-                else
-                    echo "$1" >> "$gitignorefile"
-                fi
-        shift # move to next argument(pattern)
-    done
+    if [ ${OPT_WEB} -eq 1 ] ; then
+        doWeb "$@"
+    else
+        addPatterns "$@"
+    fi
  }
+
+ addPatterns(){
+    log $LVL_DEBUG "Adding Patterns: $@"
+    log $LVL_DEBUG "\$1: $1"
+    while (("$#")) ; do # while not out of arguments (patterns)
+            if  patternExistsInFile "$1" "$gitignorefile"  ; then # if arg(pattern) literally matches line(containing a pattern)
+                echo "Pattern '$1' already exists in '$gitignorefile'"
+                log $LVL_DEBUG "InteractiveMode: $InteractiveMode"
+                if [ ${InteractiveMode} -eq 1 ]; then
+                    interactiveAdd
+                else
+                    log $LVL_DEBUG "Skipping Pattern"
+                fi
+            else
+                echo "$1" >> "$gitignorefile"
+            fi
+            shift # move to next argument(pattern)
+        done
+ }
+
 
  patternExistsInFile(){
      local pattern=$1; shift
      local file=$1;
 
-     if [ ! -s $file ] ; then # if file is size 0 (empty) return value 1
+     if [[ ! -s "$file" ]] ; then # if file is size 0 (empty) return value 1
         return 1
      fi
 
-     while IFS='' read -r line ; do
+     while  IFS='' read -r line ; do
          if [ "$pattern" == "$line" ] ; then
             return 0
          fi
@@ -62,4 +103,21 @@ interactiveAdd(){
         esac
     done
     return 0
+}
+
+function doWeb(){
+    local global=""
+    if [ "$OPT_GLOBAL" == "true" ] ; then
+        global="Global/"
+    fi
+
+    baseurl="https://raw.github.com/github/gitignore/master/"
+    while (($#)) ; do
+        url="$baseurl$global$1.gitignore"
+        log "$LVL_DEBUG" "URL: $url"
+        content=$(curl -sL $url)
+        echo -e "\n#$1" >> $gitignorefile
+        addPatterns $(echo "$content")
+        shift
+    done
 }
