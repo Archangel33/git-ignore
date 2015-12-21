@@ -1,6 +1,61 @@
 #!/bin/sh
 
 cmd_list(){
-    root=$(git rev-parse --show-toplevel)
-    echo "$(git check-ignore -v $root/*)"
+
+    if [[ "$#" -lt 1 ]] ; then
+        listActive
+    fi
+
+    while (($#)) ; do
+        case $1 in
+           p* | -p | --Patterns )
+             listPatterns
+             ;;
+           a* | -a | --Active )
+             listActive
+             ;;
+           f* | -f | --files )
+             listIgnoreFiles
+             ;;
+           h* | -h | --help )
+             listUsage; exit 0
+             ;;
+           * )
+             echo "Invalid option: ";
+             listUsage; exit 1
+        esac
+        shift
+    done
+
+}
+
+listUsage(){
+    cat <<EOM
+List command lists relevant git ignore data
+    -a              Lists all active patterns
+    -f              Lists all git ignore files
+    -h              Display this help message
+    -p              Lists all patterns that are defined and the file they are defined in.
+EOM
+}
+
+listActive(){
+    repo_root=$(git rev-parse --show-toplevel)
+    (cd $repo_root && exec echo "$(git ls-files --others -i --exclude-standard | git check-ignore -v --stdin)")
+}
+
+listIgnoreFiles(){
+    echo "$gitGlobalIgnore"
+    echo "$gitRepoIgnore"
+    find "$(pwd)" -name .gitignore
+}
+
+listPatterns(){
+    echo "$gitGlobalIgnore (core.excludesFile):"
+    cat "$gitGlobalIgnore" | sed "s/^/    /"
+    echo
+    echo "$gitRepoIgnore (Repo):"
+    cat "$gitRepoIgnore" | sed "s/^/    /"
+    echo
+    find "$(pwd)" -name ".gitignore" -exec echo {}" (local):" \; -exec sed -e "s/^/    /" {} \;
 }

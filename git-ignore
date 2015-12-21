@@ -26,7 +26,7 @@
 #%
 #% SUBCOMMANDS
 #%    add PATTERN ...             Adds patterns to the gitignorefile
-#%    list                        Lists all files that are currently being ignored in the repository
+#%    list [-a|-f|-p|-h]          Lists related to ignored files (run 'gitignore list -h | --help' for more info)
 #%    edit                        Opens the gitignorefile in the systems default editor.
 #%                                The default editor is specified via the $EDITOR environment variable.
 #%
@@ -55,8 +55,11 @@ SCRIPT_NAME="$(basename ${0})"
 SCRIPT=$(basename ${BASH_SOURCE[0]})
 SCRIPT_VERSION="0.0.1"
 
-gitignorefile="./.gitignore"
 InteractiveMode=
+gitGlobalIgnore="$(git config --get core.excludesFile)"
+gitRepoIgnore="$(git rev-parse --show-toplevel)/.git/info/exclude"
+gitIgnore="./.gitignore"
+gitignorefile="$gitIgnore"
 
 #SET DEFAULT OPTIONS
 OPT_VERBOSE=false
@@ -64,9 +67,6 @@ OPT_LOGLEVEL=6
 OPT_GLOBAL=false
 OPT_LOCAL=false
 OPT_MODE=0
-
-#Set script default vars
-DEFAULT_localrepoignore="$(git rev-parse --show-toplevel)/.git/info/exclude"
 
 #Set fonts for Help.
 NORM=`tput sgr0`
@@ -197,9 +197,9 @@ main(){
     if [ "$OPT_GLOBAL" = "true" -a "$OPT_LOCAL" = "true" ]; then
         log $LVL_ERR "options local and global can not be used at the same time!"
     elif [ "$OPT_GLOBAL" = "true" ]; then
-        gitignorefile=$(git config --get core.excludesFile)
+        gitignorefile=$gitGlobalIgnore #$(git config --get core.excludesFile)
     elif [ "$OPT_LOCAL" = "true" ]; then
-        gitignorefile=$DEFAULT_localrepoignore
+        gitignorefile=$gitRepoIgnore #$DEFAULT_localrepoignore
     elif [ "$OPT_GLOBAL" = "false" -a "$OPT_LOCAL" = "false" ]; then
         gitignorefile="./.gitignore"
     fi
