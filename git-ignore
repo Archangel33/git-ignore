@@ -38,7 +38,7 @@
 #% IMPLEMENTATION
 #-    version         ${SCRIPT_NAME} ${SCRIPT_VERSION}
 #-    author          Michel J. Reed
-#-    license
+#-    license         GPL3
 #-    script_id       12345
 #-
 #================================================================
