@@ -41,6 +41,7 @@ EOM
 
 listActive(){
     repo_root=$(git rev-parse --show-toplevel)
+    echo "source:linenum:pattern<Hard Tab>pathname"
     (cd $repo_root && exec echo "$(git ls-files --others -i --exclude-standard | git check-ignore -v --stdin)")
 }
 
