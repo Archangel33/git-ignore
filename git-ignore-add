@@ -94,13 +94,20 @@ function doWeb(){
         global="Global/"
     fi
 
-    baseurl="https://raw.github.com/github/gitignore/master/"
+    baseurl="https://raw.githubusercontent.com/github/gitignore/master/"
     while (($#)) ; do
         url="$baseurl$global$1.gitignore"
         log "$LVL_DEBUG" "URL: $url"
-        content=$(curl -sL $url)
-        echo -e "\n#$1" >> $gitignorefile
-        addPatterns $(echo "$content")
+        $(curl -s --head $url | head -n 1 | grep "HTTP/1.[01] [23].." > /dev/null )
+        echo "$?"
+        if [[ ! "$?" -eq "1" ]] ; then
+            content=$(curl -sL $url)
+            echo -e "\n#$1" >> $gitignorefile
+            addPatterns $(echo "$content")
+        else
+            echo "No patterns exist for $1 @ $baseurl"
+        fi
+
         shift
     done
 }
