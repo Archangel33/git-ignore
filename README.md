@@ -4,45 +4,42 @@ git-ignore is a tool to help with managing gitignore files for git.
 
 ## Installation
 
-Clone the repository into your /usr/lib/git-core direcory or a directory on your path.
-ex: basic install
-```
-$ git clone https://github.com/Archangel33/git-ignore.git <path to desired installation>
-```
-From here either add <path to desired installation> to the $PATH environment var or copy the git-ignore-* files to /usr/lib/git-core/
+Clone the repository to whereever you want then run the installation script.
 
-### complete installations
-ex: Install for current user
-```
-    $ mkdir -p ~/git/bin
-    $ cd ~/git/bin
-    $ git clone https://github.com/Archangel33/git-ignore.git git-ignore
-    $ export PATH=~/git/bin/git-ignore:$PATH
-```
-ex: Install for all users
-```
-    $ cd /tmp
-    $ git clone https://github.com/Archangel33/git-ignore.git git-ignore
-    $ cp ./git-ignore/git-ignore-* /usr/lib/git-core/
+```sh
+    cd /tmp
+    git clone https://github.com/Archangel33/git-ignore.git git-ignore
+    install.sh
 ```
 
-optionally remove /tmp/git-ignore
+Note: this will install the scripts to the default git directory /usr/bin/git-core. If
+you want to install the extensions to another location just provide your perfered directery.
+
+```sh
+    cd /tmp
+    git clone https://github.com/Archangel33/git-ignore.git git-ignore
+    install.sh /usr/bin
 ```
-    $ rm /tmp/git-ignore
-```
+
 ## Usage
 
 ex: Display a list of files that are currently being ignored in this repo
 
-    $ git ignore list
+```sh
+    git ignore list
+```
 
 ex: Add a pattern to be ignored by git (for patterns relative to CWD)
 
-    $ git ignore add "~*"
+```sh
+    git ignore add "~*"
+```
 
 ex: Edit patterns to be ignored by git manually
 
-    $ git ignore edit
+```sh
+    git ignore edit
+```
 
 Run `git-ignore -h | --help` for full usage
 
