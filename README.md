@@ -19,7 +19,7 @@ you want to install the extensions to another location just provide your perfere
     cd /tmp
     git clone https://github.com/Archangel33/git-ignore.git git-ignore
     install.sh /usr/bin
-```/
+```
 
 ## Usage
 
