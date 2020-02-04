@@ -4,39 +4,22 @@ git-ignore is a tool to help with managing gitignore files for git.
 
 ## Installation
 
-Clone the repository into your /usr/lib/git-core direcory or a directory on your path.
-ex: basic install
-
-```sh
-git clone https://github.com/Archangel33/git-ignore.git <path to desired installation>
-```
-
-From here either add < path to desired installation > to the $PATH environment var or copy the git-ignore-* files to /usr/lib/git-core/
-
-### complete installations
-
-ex: Install for current user
-
-```sh
-    mkdir -p ~/git/bin
-    cd ~/git/bin
-    git clone https://github.com/Archangel33/git-ignore.git git-ignore
-    export PATH=~/git/bin/git-ignore:$PATH
-```
-
-ex: Install for all users
+Clone the repository to whereever you want then run the installation script.
 
 ```sh
     cd /tmp
     git clone https://github.com/Archangel33/git-ignore.git git-ignore
-    cp ./git-ignore/git-ignore-* /usr/lib/git-core/
+    install.sh
 ```
 
-optionally remove /tmp/git-ignore
+Note: this will install the scripts to the default git directory /usr/bin/git-core. If
+you want to install the extensions to another location just provide your perfered directery.
 
 ```sh
-    rm /tmp/git-ignore
-```
+    cd /tmp
+    git clone https://github.com/Archangel33/git-ignore.git git-ignore
+    install.sh /usr/bin
+```/
 
 ## Usage
 
